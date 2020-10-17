@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <!-- Required elements-->
+        <id>NETBump</id>
+        <version>1.2.0</version>
+        <title>NETBump</title>
+        <summary>MSBuild task that bumps the version of a Visual Studio 2017/2019 project.</summary>
+        <description>
+          MSBuild task that bumps the version of a Visual Studio 2017/2019 project before build and pack.
+        </description>
+        <authors>Christoph Luidold</authors>
+        <projectUrl>https://github.com/cluidold/NETBump</projectUrl>
+        <tags>msbuild bump package version increment</tags>
+        <developmentDependency>true</developmentDependency>
+    </metadata>
+    <files>
+      <file src="bin\Release\**\*.dll" target="tasks"/>
+      <file src="build\*.*" target="build"/>
+      <file src="buildMultiTargeting\*.*" target="buildMultiTargeting"/>
+    </files>
+</package>

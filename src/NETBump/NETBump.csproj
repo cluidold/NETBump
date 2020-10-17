@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+    <!--<GeneratePackageOnBuild>false</GeneratePackageOnBuild>-->
+    <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+    <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
+    <DevelopmentDependency>True</DevelopmentDependency>
+    <!--<PackageId>NETBump</PackageId>-->
+    <!--<Authors>Christoph Luidold</Authors>-->
+    <!--<Description>MSBuild task that bumps the version of a Visual Studio 2017/2019 project before build and pack.</Description>-->
+    <!--<PackageProjectUrl>https://luidold.visualstudio.com/_git/NETBump</PackageProjectUrl>-->
+    <!--<PackageTags>msbuild bump package version increment</PackageTags>-->
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="build\*" PackagePath="build\" />
+    <Content Include="buildMultiTargeting\*" PackagePath="buildMultiTargeting\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.4.0">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="NuGet.Versioning" Version="4.3.0">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Update="@(PackageReference)" PrivateAssets="All" />
+    <PackageReference Update="Microsoft.Build.Tasks.Core" Version="16.7.0" />
+    <PackageReference Update="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Update="NuGet.Versioning" Version="5.7.0" />
+  </ItemGroup>
+
+  <Target Name="PackTaskDependencies" BeforeTargets="GenerateNuspec">
+
+    <!--The include needs to happen after output has been copied to build output folder
+    but before NuGet generates a nuspec.-->
+
+    <ItemGroup>
+      <_PackageFiles Include="bin\$(Configuration)\**\*.dll">
+        <PackagePath>tasks\%(RecursiveDir)</PackagePath>
+        <Visible>false</Visible>
+        <BuildAction>Content</BuildAction>
+      </_PackageFiles>
+    </ItemGroup>
+  </Target>
+
+</Project>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project TreatAsLocalProperty="TaskFolder">
+    
+  <PropertyGroup>
+    <TaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard2.0</TaskFolder>
+    <TaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net47</TaskFolder>
+    <NETBumpPath>$(MSBuildThisFileDirectory)..\tasks\$(TaskFolder)</NETBumpPath>
+  </PropertyGroup>
+
+  <UsingTask AssemblyFile="$(NETBumpPath)\NETBump.dll" TaskName="NETBump.BumpTask" />
+
+  <PropertyGroup>
+    <NETBumpLockFilePath>$(MSBuildProjectDirectory)\$(MSBuildProjectName).netbump.lock</NETBumpLockFilePath>
+  </PropertyGroup>
+  
+</Project>

@@ -1,0 +1,1 @@
+dotnet pack /p:NuspecFile=NETBump.nuspec /p:Configuration=Release

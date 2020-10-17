@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <Target Name="NETBumpBeforeOuterBuild" BeforeTargets="DispatchToInnerBuilds">
+
+    <Touch Files="$(NETBumpLockFilePath)" AlwaysCreate="true"/>
+
+    <BumpTask
+      Configuration="$(Configuration)"
+      ProjectPath="$(MSBuildProjectFullPath)"
+
+      BumpMajor="$(BumpMajor)"
+      BumpMinor="$(BumpMinor)"
+      BumpPatch="$(BumpPatch)"
+      BumpRevision="$(BumpRevision)"
+      RevisionLabel="$(RevisionLabel)"
+      RevisionLabelDigits="$(RevisionLabelDigits)"
+      ResetMajor="$(ResetMajor)"
+      ResetMinor="$(ResetMinor)"
+      ResetPatch="$(ResetPatch)"
+      ResetRevision="$(ResetRevision)"
+      ResetRevisionLabel="$(ResetRevisionLabel)"
+      SyncVersionWithAssemblyVersion="$(SyncVersionWithAssemblyVersion)"
+      SyncAssemblyVersionWithFileVersion="$(SyncAssemblyVersionWithFileVersion)">
+
+      <Output TaskParameter="NewVersion" PropertyName="NETBumpNewVersion" />
+    </BumpTask>
+
+    <PropertyGroup>
+      <Version Condition="$(NETBumpNewVersion) != ''">$(NETBumpNewVersion)</Version>
+      <PackageVersion Condition="$(NETBumpNewVersion) != ''">$(NETBumpNewVersion)</PackageVersion>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="NETBumpAfterOuterBuild" AfterTargets="DispatchToInnerBuilds">
+    <Delete Files="$(NETBumpLockFilePath)"/>
+  </Target>
+
+  <PropertyGroup>
+    <NETBumpLoaded>True</NETBumpLoaded>
+  </PropertyGroup>
+
+</Project>

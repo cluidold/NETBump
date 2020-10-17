@@ -1,0 +1,17 @@
+{
+  "Configurations": {
+    "Debug": {
+      "Disabled": true,
+      "BumpRevision": true,
+      "RevisionLabel": "dev",
+      "RevisionLabelDigits": 2
+    },
+
+    "Release": {
+      "Disabled": false,
+      "BumpPatch": true,
+      "ResetRevision": true,
+      "ResetRevisionLabel": "dev"
+    }
+  }
+}
