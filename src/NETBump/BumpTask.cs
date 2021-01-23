@@ -46,10 +46,6 @@ namespace NETBump
 
         public int RevisionLabelDigits { get; set; } = DefaultLabelDigits;
 
-        public bool SyncVersionWithAssemblyVersion { get; set; } = true;
-
-        public bool SyncAssemblyVersionWithFileVersion { get; set; } = true;
-
 
         public override bool Execute()
         {
@@ -67,9 +63,7 @@ namespace NETBump
                 ResetPatch = ResetPatch,
                 ResetRevision = ResetRevision,
                 ResetRevisionLabel = ResetRevisionLabel,
-                RevisionLabelDigits = RevisionLabelDigits,
-                SyncVersionWithAssemblyVersion = SyncVersionWithAssemblyVersion,
-                SyncAssemblyVersionWithFileVersion = SyncAssemblyVersionWithFileVersion
+                RevisionLabelDigits = RevisionLabelDigits
             };
 
             try

@@ -27,9 +27,5 @@
         public const int DefaultLabelDigits = 2;
 
         public int RevisionLabelDigits { get; set; } = DefaultLabelDigits;
-
-        public bool SyncVersionWithAssemblyVersion { get; set; }
-
-        public bool SyncAssemblyVersionWithFileVersion { get;set; }
     }
 }

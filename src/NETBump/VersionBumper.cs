@@ -52,48 +52,44 @@ namespace NETBump
                 var oldVersionString = string.Empty;
                 var oldAssemblyVersionString = string.Empty;
                 var oldFileVersionString = string.Empty;
+                var oldInformationalVersionString = string.Empty;
 
                 // check if .NET Core or .NET Framework
                 var isNetFrameworkProject = IsNetFrameworkProject();
 
                 if (isNetFrameworkProject)
                 {
-                    GetVersionsFromNetFrameworkProject(out oldAssemblyVersionString, out oldFileVersionString);
+                    GetVersionsFromNetFrameworkProject(out oldAssemblyVersionString, out oldFileVersionString, out oldInformationalVersionString);
                     //throw new NotImplementedException(".NET Framework projects currently not supported!");
                 }
                 else
                 {
-                    GetVersionsFromNetCoreProject(out oldVersionString, out oldAssemblyVersionString, out oldFileVersionString);
+                    GetVersionsFromNetCoreProject(out oldVersionString, out oldAssemblyVersionString, out oldFileVersionString, out oldInformationalVersionString);
                 }
 
                 var oldVersion = oldVersionString == string.Empty ? null : new NuGetVersion(oldVersionString);
                 var oldAssemblyVersion = oldAssemblyVersionString == string.Empty ? null : new NuGetVersion(oldAssemblyVersionString);
                 var oldFileVersion = oldFileVersionString == string.Empty ? null : new NuGetVersion(oldFileVersionString);
+                var oldInformationalVersion = oldInformationalVersionString == string.Empty ? null : new NuGetVersion(oldInformationalVersionString);
 
-                if (_settings.SyncVersionWithAssemblyVersion)
-                {
-                    oldAssemblyVersion = oldVersion;
-                }
-                if (_settings.SyncAssemblyVersionWithFileVersion)
-                {
-                    oldFileVersion = oldAssemblyVersion;
-                }
+                var newInformationalVersion = GetNextVersion(oldInformationalVersion);
 
-                var newVersion = GetNextVersion(oldVersion);
-                var newAssemblyVersion = GetNextVersion(oldAssemblyVersion);
-                var newFileVersion = GetNextVersion(oldFileVersion);
+                var newVersion = new SemanticVersion(newInformationalVersion.Major, newInformationalVersion.Minor, newInformationalVersion.Patch);
+                var newAssemblyVersion = new SemanticVersion(newInformationalVersion.Major, 0, 0);
+                var newFileVersion = new SemanticVersion(newInformationalVersion.Major, newInformationalVersion.Minor, newInformationalVersion.Patch);
 
                 var newVersionString = newVersion == null ? "" : newVersion.ToString();
-                var newAssemblyVersionString = newAssemblyVersion == null ? string.Empty : newAssemblyVersion.ReleaseLabels.Count() == 0 ? newAssemblyVersion.Version.ToString() : newAssemblyVersion.ToString();
-                var newFileVersionString = newFileVersion == null ? string.Empty : newFileVersion.ReleaseLabels.Count() == 0 ? newFileVersion.Version.ToString() : newFileVersion.ToString();
+                var newAssemblyVersionString = newAssemblyVersion == null ? string.Empty : newAssemblyVersion.ToString(); //newAssemblyVersion.ReleaseLabels.Count() == 0 ? newAssemblyVersion.Version.ToString() : newAssemblyVersion.ToString();
+                var newFileVersionString = newFileVersion == null ? string.Empty : newFileVersion.ToString();
+                var newInformationalVersionString = newInformationalVersion == null ? string.Empty : newInformationalVersion.ToString();
 
                 if (isNetFrameworkProject)
                 {
-                    SetVersionsForNetFrameworkProject(newAssemblyVersionString, newFileVersionString);
+                    SetVersionsForNetFrameworkProject(newAssemblyVersionString, newFileVersionString, newInformationalVersionString);
                 }
                 else
                 {
-                    SetVersionsForNetCoreProject(newVersionString, newAssemblyVersionString, newFileVersionString);
+                    SetVersionsForNetCoreProject(newVersionString, newAssemblyVersionString, newFileVersionString, newInformationalVersionString);
                 }
 
                 if (newVersion != oldVersion)
@@ -109,6 +105,11 @@ namespace NETBump
                 if (newFileVersion != oldFileVersion)
                 {
                     SendMessage(MessageImportance.High, $"Changed Version from {oldFileVersionString} to {newFileVersionString}");
+                    ChangeFileVersion(newFileVersionString);
+                }
+                if (newInformationalVersion != oldInformationalVersion)
+                {
+                    SendMessage(MessageImportance.High, $"Changed Version from {oldInformationalVersionString} to {newInformationalVersionString}");
                     ChangeFileVersion(newFileVersionString);
                 }
 
@@ -209,11 +210,12 @@ namespace NETBump
             return projectXml.DocumentElement.SelectSingleNode(path);
         }
 
-        private void GetVersionsFromNetCoreProject(out string oldVersion, out string oldAssemblyVersion, out string oldFileVersion)
+        private void GetVersionsFromNetCoreProject(out string oldVersion, out string oldAssemblyVersion, out string oldFileVersion, out string oldInformationalVersion)
         {
             oldVersion = string.Empty;
             oldAssemblyVersion = string.Empty;
             oldFileVersion = string.Empty;
+            oldInformationalVersion = string.Empty;
 
             var versionNode = GetVersionNode(_projectFile, "/Project/PropertyGroup/Version");
             if (versionNode == null)
@@ -233,12 +235,20 @@ namespace NETBump
             {
                 oldFileVersion = fileVersionNode.InnerText;
             }
+
+            var informalVersionNode = GetVersionNode(_projectFile, "/Project/PropertyGroup/AssemblyInformationalVersion");
+            if (informalVersionNode != null)
+            {
+                oldInformationalVersion = informalVersionNode.InnerText;
+            }
         }
 
-        private void GetVersionsFromNetFrameworkProject(out string oldAssemblyVersion, out string oldFileVersion)
+        private void GetVersionsFromNetFrameworkProject(out string oldAssemblyVersion, out string oldFileVersion, out string oldInformationalVersion)
         {
             oldAssemblyVersion = string.Empty;
             oldFileVersion = string.Empty;
+            oldInformationalVersion = String.Empty;
+
             var directory = new DirectoryInfo(_projectFilePath);
 
             var assemblyInfo = Path.Combine(directory.Parent.FullName, "Properties", "assemblyinfo.cs");
@@ -252,6 +262,7 @@ namespace NETBump
 
             var assemblyVersionSearchText = "[assembly: AssemblyVersion(\"";
             var assemblyFileVersionSearchText = "[assembly: AssemblyFileVersion(\"";
+            var assemblyInformationalVersionSearchText = "[assembly: AssemblyInformationalVersion(\"";
 
             foreach (var line in fileContent)
             {
@@ -280,10 +291,22 @@ namespace NETBump
                     var assemblyFileVersion = line.Substring(positionAssemblyFileVersion, assemblyFileVersionEnd - positionAssemblyFileVersion);
                     oldFileVersion = assemblyFileVersion;
                 }
+
+                if (line.StartsWith(assemblyInformationalVersionSearchText))
+                {
+                    var positionInformationalVersion = line.IndexOf(assemblyInformationalVersionSearchText);
+                    if (positionInformationalVersion != -1)
+                    {
+                        positionInformationalVersion += assemblyInformationalVersionSearchText.Length;
+                    }
+                    var informationalVersionEnd = line.IndexOf("\")", positionInformationalVersion);
+                    var informationalVersion = line.Substring(positionInformationalVersion, informationalVersionEnd - positionInformationalVersion);
+                    oldInformationalVersion = informationalVersion;
+                }
             }
         }
 
-        private List<string> ResetLabels(NuGetVersion oldVersion)
+        private List<string> ResetLabels(SemanticVersion oldVersion)
         {
             var labels = oldVersion.ReleaseLabels.ToList();
 
@@ -308,17 +331,16 @@ namespace NETBump
             return labels;
         }
 
-        private NuGetVersion GetNextVersion(NuGetVersion oldVersion)
+        private SemanticVersion GetNextVersion(SemanticVersion oldVersion)
         {
             if (oldVersion == null) return null;
 
             var nextMajor = GetNextValue(oldVersion.Major, _settings.ResetMajor, _settings.BumpMajor);
             var nextMinor = GetNextValue(oldVersion.Minor, _settings.ResetMinor, _settings.BumpMinor);
             var nextPatch = GetNextValue(oldVersion.Patch, _settings.ResetPatch, _settings.BumpPatch);
-            var nextRevision = GetNextValue(oldVersion.Revision, _settings.ResetRevision, _settings.BumpRevision);
 
             // if label present and ResetLabel = true -> do not increment patch to ensure from 1.2.0-dev1 to 1.2.0 instead of 1.2.0-dev1 to 1.2.1
-            if (oldVersion.ReleaseLabels.Count() != 0 && _settings.ResetRevision)
+            if (oldVersion.ReleaseLabels.Count() != 0 && _settings.ResetRevision && (_settings.BumpRevision || _settings.BumpPatch))
             {
                 --nextPatch;
             }
@@ -336,12 +358,12 @@ namespace NETBump
                 var regex = new Regex($"^{_settings.RevisionLabel}(\\d*)$");
                 var value = 0;
 
-                SendMessage(MessageImportance.Low, oldVersion.IsPrerelease.ToString());
+                //SendMessage(MessageImportance.Low, oldVersion.IsPrerelease.ToString());
 
-                if (!oldVersion.IsPrerelease)
-                {
-                    SendMessage(MessageImportance.High, $"Incrementing patch from {nextPatch} to {++nextPatch}");
-                }
+                //if (!oldVersion.IsPrerelease)
+                //{
+                //    SendMessage(MessageImportance.High, $"Incrementing patch from {nextPatch} to {++nextPatch}");
+                //}
 
                 foreach (var label in labels)
                 {
@@ -357,9 +379,13 @@ namespace NETBump
 
                 value++;
                 labels.Add(_settings.RevisionLabel + value.ToString(new string('0', _settings.RevisionLabelDigits)));
+                if (labels.Count != 0 && oldVersion.ReleaseLabels.Count() == 0)
+                {
+                    ++nextPatch;
+                }
             }
 
-            var newVersion = new NuGetVersion(nextMajor, nextMinor, nextPatch, nextRevision, labels, oldVersion.Metadata);
+            var newVersion = new SemanticVersion(nextMajor, nextMinor, nextPatch, labels, oldVersion.Metadata);
             return newVersion;
         }
 
@@ -372,7 +398,7 @@ namespace NETBump
             return oldValue;
         }
 
-        private void SetVersionsForNetCoreProject(string version, string assemblyVersion, string fileVersion)
+        private void SetVersionsForNetCoreProject(string version, string assemblyVersion, string fileVersion, string assemblyInformationalVersion)
         {
             var versionNode = GetVersionNode(_projectFile, "/Project/PropertyGroup/Version");
             if (versionNode == null)
@@ -392,9 +418,16 @@ namespace NETBump
             {
                 fileVersionNode.InnerText = fileVersion;
             }
+
+            var assemblyInformationalVersionNode = GetVersionNode(_projectFile, "/Project/PropertyGroup/AssemblyInformationalVersion");
+            if (assemblyInformationalVersionNode != null)
+            {
+                assemblyInformationalVersionNode.InnerText = assemblyInformationalVersion;
+            }
+
         }
 
-        private void SetVersionsForNetFrameworkProject(string assemblyVersion, string fileVersion)
+        private void SetVersionsForNetFrameworkProject(string assemblyVersion, string fileVersion, string informationalVersion)
         {
             var directory = new DirectoryInfo(_projectFilePath);
 
@@ -409,9 +442,11 @@ namespace NETBump
 
             var assemblyVersionSearchText = "[assembly: AssemblyVersion(\"";
             var assemblyFileVersionSearchText = "[assembly: AssemblyFileVersion(\"";
+            var informationlVersionSearchText = "[assembly: AssemblyInformationalVersion(\"";
 
             var newAssemblyVersion = $"[assembly: AssemblyVersion(\"{assemblyVersion}\")]";
             var newAssemblyFileVersion = $"[assembly: AssemblyFileVersion(\"{fileVersion}\")]";
+            var newInformationalVersion = $"[assembly: AssemblyInformationalVersion(\"{informationalVersion}\")]";
 
             for (var i = 0; i< fileContent.Length; i++)
             {
@@ -427,6 +462,11 @@ namespace NETBump
                 if (line.StartsWith(assemblyFileVersionSearchText))
                 {
                     fileContent[i] = newAssemblyFileVersion;
+                }
+
+                if (line.StartsWith(informationlVersionSearchText))
+                {
+                    fileContent[i] = newInformationalVersion;
                 }
             }
 

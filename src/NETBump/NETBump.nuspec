@@ -3,7 +3,7 @@
     <metadata>
         <!-- Required elements-->
         <id>NETBump</id>
-        <version>1.2.0</version>
+        <version>1.4.0</version>
         <title>NETBump</title>
         <summary>MSBuild task that bumps the version of a Visual Studio 2017/2019 project.</summary>
         <description>

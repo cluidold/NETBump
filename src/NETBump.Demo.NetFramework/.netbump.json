@@ -1,16 +1,98 @@
 {
   "Configurations": {
     "Debug": {
-      "Disabled": true,
+      "Disabled": false,
+
+      "BumpMajor": false,
+      "BumpMinor": false,
+      "BumpPatch": false,
       "BumpRevision": true,
-      "RevisionLabel": "dev",
-      "RevisionLabelDigits": 2
+
+      "RevisionLabel": "preview",
+
+      "ResetMajor": false,
+      "ResetMinor": false,
+      "ResetPatch": false,
+      "ResetRevision": false,
+      "ResetRevisionLabel": null,
+
+      "RevisionLabelDigits": 3
     },
 
-    "Release": {
-      "Disabled": true,
+    "Patch": {
+      "Disabled": false,
+
+      "BumpMajor": false,
+      "BumpMinor": false,
       "BumpPatch": true,
-      "ResetRevision": true
+      "BumpRevision": false,
+
+      "RevisionLabel": null,
+
+      "ResetMajor": false,
+      "ResetMinor": false,
+      "ResetPatch": false,
+      "ResetRevision": true,
+      "ResetRevisionLabel": "preview",
+
+      "RevisionLabelDigits": 3
+    },
+
+    "Minor": {
+      "Disabled": false,
+
+      "BumpMajor": false,
+      "BumpMinor": true,
+      "BumpPatch": false,
+      "BumpRevision": false,
+
+      "RevisionLabel": null,
+
+      "ResetMajor": false,
+      "ResetMinor": false,
+      "ResetPatch": true,
+      "ResetRevision": true,
+      "ResetRevisionLabel": "preview",
+
+      "RevisionLabelDigits": 3
+    },
+
+    "Major": {
+      "Disabled": false,
+
+      "BumpMajor": true,
+      "BumpMinor": false,
+      "BumpPatch": false,
+      "BumpRevision": false,
+
+      "RevisionLabel": null,
+
+      "ResetMajor": false,
+      "ResetMinor": true,
+      "ResetPatch": true,
+      "ResetRevision": true,
+      "ResetRevisionLabel": "preview",
+
+      "RevisionLabelDigits": 3
+    },
+
+    "Default": {
+      "Disabled": false,
+
+      "BumpMajor": false,
+      "BumpMinor": false,
+      "BumpPatch": false,
+      "BumpRevision": false,
+
+      "RevisionLabel": null,
+
+      "ResetMajor": false,
+      "ResetMinor": false,
+      "ResetPatch": false,
+      "ResetRevision": false,
+      "ResetRevisionLabel": null,
+
+      "RevisionLabelDigits": 2
     }
   }
 }

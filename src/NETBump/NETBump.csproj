@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+    <TargetFrameworks>net47;net471;net472;net48;netstandard2.0;netstandard2.1</TargetFrameworks>
     <!--<GeneratePackageOnBuild>false</GeneratePackageOnBuild>-->
     <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
@@ -11,7 +11,8 @@
     <!--<Description>MSBuild task that bumps the version of a Visual Studio 2017/2019 project before build and pack.</Description>-->
     <!--<PackageProjectUrl>https://luidold.visualstudio.com/_git/NETBump</PackageProjectUrl>-->
     <!--<PackageTags>msbuild bump package version increment</PackageTags>-->
-    <Version>1.0.0</Version>
+    <Version>1.4.0</Version>
+    <Configurations>Debug;Release;Patch;Minor;Major</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,9 +31,9 @@
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
     <PackageReference Update="@(PackageReference)" PrivateAssets="All" />
-    <PackageReference Update="Microsoft.Build.Tasks.Core" Version="16.7.0" />
+    <PackageReference Update="Microsoft.Build.Tasks.Core" Version="16.8.0" />
     <PackageReference Update="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Update="NuGet.Versioning" Version="5.7.0" />
+    <PackageReference Update="NuGet.Versioning" Version="5.8.1" />
   </ItemGroup>
 
   <Target Name="PackTaskDependencies" BeforeTargets="GenerateNuspec">
